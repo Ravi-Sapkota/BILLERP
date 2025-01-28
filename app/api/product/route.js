@@ -3,24 +3,29 @@ import { NextResponse } from "next/server";
 
 export async function GET(request) {
   const uri =
-    "mongodb+srv://whiteshadow:Zfu6S8ZH3FBfOkXx@cluster0.23ufm.mongodb.net/";
+    "mongodb+srv://whiteshadow:Zfu6S8ZH3FBfOkXx@cluster0.23ufm.mongodb.net/stock?retryWrites=true&w=majority";
+  const options = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    ssl: true,
+  };
 
   const client = new MongoClient(uri);
-
   try {
+    await client.connect();
     const database = client.db("stock");
     const inventory = database.collection("inventory");
-    const query = {};
-    const allProduct = await inventory.find(query).toArray();
+    const allProduct = await inventory.find({}).toArray();
     return NextResponse.json({ allProduct });
+  } catch (error) {
+    return NextResponse.json({ error: "Database connection failed" });
   } finally {
-    // Ensures that the client will close when you finish/error
     await client.close();
   }
 }
+
 export async function POST(request) {
   let body = await request.json();
-  console.log(body);
   const uri =
     "mongodb+srv://whiteshadow:Zfu6S8ZH3FBfOkXx@cluster0.23ufm.mongodb.net/";
 

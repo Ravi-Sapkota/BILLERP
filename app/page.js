@@ -13,13 +13,12 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("/api/product"); // Ensure this matches your API route
+        const response = await fetch("/api/product");
         const rjson = await response.json();
-        console.log("Fetched data:", rjson); // Debugging log
-        setProducts(rjson.allProduct || []); // Update to match the correct property name
+        setProducts(rjson.allProduct || []);
       } catch (error) {
         console.error("Error fetching products:", error);
-        setProducts([]); // Handle errors gracefully
+        setProducts([]);
       }
     };
     fetchProducts();
@@ -27,14 +26,31 @@ export default function Home() {
 
   const addProduct = async (e) => {
     e.preventDefault();
+
+    // Ensure quantity and rate are converted to numbers
+    const quantityAsNumber = Number(productForm.quantity);
+    const rateAsNumber = Number(productForm.rate);
+
+    // Check if the conversion was successful
+    if (isNaN(quantityAsNumber) || isNaN(rateAsNumber)) {
+      console.log("Invalid quantity or rate");
+      setAlert("Please enter valid numbers for quantity and rate");
+      return;
+    }
+
     try {
       const response = await fetch("/api/product", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(productForm),
+        body: JSON.stringify({
+          ...productForm,
+          quantity: quantityAsNumber, // Send as number
+          rate: rateAsNumber, // Send as number
+        }),
       });
+
       if (response.ok) {
         console.log("Product added successfully");
         setAlert("Your product has been added");
@@ -78,14 +94,14 @@ export default function Home() {
             onChange={onDropdownEdit}
             type="text"
             placeholder="Search..."
-            className="w-full border border-gray-300 px-4 py-2 mb-2"
+            className="w-full border border-gray-300 px-4 py-2 mb-2 rounded "
           />
-          <select className="w-[10vw] border border-gray-300 px-4 py-2">
+          {/* <select className="w-[10vw] border border-gray-300 px-4 py-2">
             <option value="">Select a category</option>
             <option value="projectA">Project A</option>
             <option value="projectB">Project B</option>
             <option value="projectC">Project C</option>
-          </select>
+          </select> */}
         </div>
         {loading && (
           <svg
@@ -124,7 +140,7 @@ export default function Home() {
               >
                 <div className="mx-5">
                   <span className="slug"> {item.slug}</span>
-                  <span className="price px-5">(Rs. {item.price}) </span>
+                  <span className="rate px-5">(Rs. {item.rate}) </span>
                 </div>
                 <span className="quantity"> {item.quantity}</span>
               </div>
@@ -138,7 +154,7 @@ export default function Home() {
         <form>
           <div className="mb-4">
             <label htmlFor="productName" className="block mb-2">
-              Product slug
+              Product Name
             </label>
             <input
               value={productForm?.slug || ""}
@@ -164,15 +180,15 @@ export default function Home() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="price" className="block mb-2">
-              Price
+            <label htmlFor="rate" className="block mb-2">
+              Rate
             </label>
             <input
-              value={productForm?.price || ""}
-              name="price"
+              value={productForm?.rate || ""}
+              name="rate"
               onChange={handleChange}
               type="number"
-              id="price"
+              id="rate"
               className="w-full border border-gray-300 px-4 py-2"
             />
           </div>
@@ -195,7 +211,7 @@ export default function Home() {
             <tr>
               <th className="px-4 py-2">Product Name</th>
               <th className="px-4 py-2">Quantity</th>
-              <th className="px-4 py-2">Price</th>
+              <th className="px-4 py-2">Rate</th>
             </tr>
           </thead>
           <tbody>
@@ -204,7 +220,7 @@ export default function Home() {
                 <tr key={product.slug}>
                   <td className="border px-4 py-2">{product.slug}</td>
                   <td className="border px-4 py-2">{product.quantity}</td>
-                  <td className="border px-4 py-2">Rs. {product.price}</td>
+                  <td className="border px-4 py-2">Rs. {product.rate}</td>
                 </tr>
               ))
             ) : (
