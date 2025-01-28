@@ -1,101 +1,222 @@
-import Image from "next/image";
+"use client";
+import Header from "@/components/Header";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [productForm, setProductForm] = useState({});
+  const [products, setProducts] = useState([]);
+  const [alert, setAlert] = useState("");
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [dropdown, setDropdown] = useState([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("/api/product"); // Ensure this matches your API route
+        const rjson = await response.json();
+        console.log("Fetched data:", rjson); // Debugging log
+        setProducts(rjson.allProduct || []); // Update to match the correct property name
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setProducts([]); // Handle errors gracefully
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const addProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productForm),
+      });
+      if (response.ok) {
+        console.log("Product added successfully");
+        setAlert("Your product has been added");
+        setProductForm({});
+      } else {
+        console.log("Error adding product");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    setProductForm({ ...productForm, [e.target.name]: e.target.value });
+  };
+
+  const onDropdownEdit = async (e) => {
+    if (!loading) {
+      setLoading(true);
+      setQuery(e.target.value);
+      const response = await fetch("/api/search?query=" + query);
+      let rjson = await response.json();
+      setDropdown(rjson.products);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Header />
+      <div
+        className="container my-8 mx-auto "
+        onBlur={() => {
+          setDropdown([]);
+        }}
+      >
+        <div className="text-green-800 text-center">{alert}</div>
+        <h1 className="text-3xl font-bold mb-6">Search a product</h1>
+        <div className="flex mb-6">
+          <input
+            onChange={onDropdownEdit}
+            type="text"
+            placeholder="Search..."
+            className="w-full border border-gray-300 px-4 py-2 mb-2"
+          />
+          <select className="w-[10vw] border border-gray-300 px-4 py-2">
+            <option value="">Select a category</option>
+            <option value="projectA">Project A</option>
+            <option value="projectB">Project B</option>
+            <option value="projectC">Project C</option>
+          </select>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        {loading && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 100"
+            width="100"
+            height="100"
+            fill="none"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              stroke="black"
+              strokeWidth="5"
+              strokeDasharray="63 63"
+              strokeLinecap="round"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 50 50"
+                to="360 50 50"
+                dur="1s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </svg>
+        )}
+        <div className="dropcontainer w-[72vw] border-1 bg-purple-100 rounded-md">
+          {dropdown.map((item) => {
+            return (
+              <div
+                key={item.slug}
+                className="container flex justify-between my-3 border-b-2"
+              >
+                <div className="mx-5">
+                  <span className="slug"> {item.slug}</span>
+                  <span className="price px-5">(Rs. {item.price}) </span>
+                </div>
+                <span className="quantity"> {item.quantity}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="container mx-auto my-8">
+        <h1 className="text-3xl font-bold mb-6">Add new items to Stock</h1>
+        <form>
+          <div className="mb-4">
+            <label htmlFor="productName" className="block mb-2">
+              Product slug
+            </label>
+            <input
+              value={productForm?.slug || ""}
+              name="slug"
+              onChange={handleChange}
+              type="text"
+              id="productName"
+              className="w-full border border-gray-300 px-4 py-2"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="quantity" className="block mb-2">
+              Quantity
+            </label>
+            <input
+              value={productForm?.quantity || ""}
+              name="quantity"
+              onChange={handleChange}
+              type="number"
+              id="quantity"
+              className="w-full border border-gray-300 px-4 py-2"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="price" className="block mb-2">
+              Price
+            </label>
+            <input
+              value={productForm?.price || ""}
+              name="price"
+              onChange={handleChange}
+              type="number"
+              id="price"
+              className="w-full border border-gray-300 px-4 py-2"
+            />
+          </div>
+
+          <button
+            onClick={addProduct}
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2"
+          >
+            Add product
+          </button>
+        </form>
+      </div>
+
+      <div className="container my-8 mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Display Current Stock</h1>
+
+        <table className="table-auto w-full">
+          <thead>
+            <tr>
+              <th className="px-4 py-2">Product Name</th>
+              <th className="px-4 py-2">Quantity</th>
+              <th className="px-4 py-2">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.length > 0 ? (
+              products.map((product) => (
+                <tr key={product.slug}>
+                  <td className="border px-4 py-2">{product.slug}</td>
+                  <td className="border px-4 py-2">{product.quantity}</td>
+                  <td className="border px-4 py-2">Rs. {product.price}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="border px-4 py-2 text-center" colSpan="3">
+                  No products available.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
