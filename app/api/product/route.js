@@ -25,19 +25,55 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  let body = await request.json();
   const uri =
     "mongodb+srv://whiteshadow:Zfu6S8ZH3FBfOkXx@cluster0.23ufm.mongodb.net/";
 
   const client = new MongoClient(uri);
 
   try {
+    const body = await request.json();
+    const { slug, quantity, rate } = body;
+
+    if (!slug) {
+      return NextResponse.json(
+        { error: "Missing product name" },
+        { status: 400 }
+      );
+    }
     const database = client.db("stock");
     const inventory = database.collection("inventory");
-    const product = await inventory.insertOne(body);
+
+    const existingProduct = await inventory.findOne({ slug });
+
+    if (existingProduct) {
+      return NextResponse.json(
+        { error: "This product is already added." },
+        { status: 409 }
+      );
+    }
+
+    const quantityAsNumber = parseInt(quantity, 10);
+    const rateAsNumber = parseInt(rate, 10);
+
+    if (isNaN(quantityAsNumber) || isNaN(rateAsNumber)) {
+      return NextResponse.json(
+        { error: "Not a valid number." },
+        { status: 400 }
+      );
+    }
+    const product = await inventory.insertOne({
+      slug,
+      quantity: quantityAsNumber,
+      rate: rateAsNumber,
+    });
     return NextResponse.json({ product, ok: true });
+  } catch (error) {
+    console.error("Error adding product: ", error);
+    return NextResponse.json(
+      { error: "Failed to add product" },
+      { status: 500 }
+    );
   } finally {
-    // Ensures that the client will close when you finish/error
     await client.close();
   }
 }
