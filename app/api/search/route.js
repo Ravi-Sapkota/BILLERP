@@ -14,15 +14,15 @@ export async function GET(request) {
     await client.connect();
     const database = client.db("stock");
     const inventory = database.collection("inventory");
-    const products = await inventory
-      .aggregate([
-        {
-          $match: {
-            $or: [{ slug: { $regex: query, $options: "i" } }],
-          },
-        },
-      ])
-      .toArray();
+
+    // Fetch all documents from the collection
+    const allProducts = await inventory.find({}).toArray();
+
+    // Perform a linear search
+    const products = allProducts.filter((product) =>
+      product.slug.toLowerCase().includes(query.toLowerCase())
+    );
+
     return NextResponse.json({ products });
   } finally {
     // Ensures that the client will close when you finish/error
