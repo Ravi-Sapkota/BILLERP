@@ -30,7 +30,7 @@ const SalesPage = () => {
     }
     setInvoiceItems([
       ...invoiceItems,
-      { ...product, quantity: 1, rate: product.rate * 1.2 },
+      { ...product, quantity: 1, rate: product.rate * 1.25 },
     ]);
     setAlert("");
   };
@@ -49,22 +49,21 @@ const SalesPage = () => {
   );
 
   const handleSubmit = async () => {
-    // Validate stock availability
-    const insufficientStockItems = invoiceItems.filter((invoiceItem) => {
-      const product = products.find((prod) => prod.slug === invoiceItem.slug);
-      return !product || invoiceItem.quantity > product.quantity;
-    });
+    // Check if any quantity exceeds stock availability
+    const invalidItems = invoiceItems.filter(
+      (item) =>
+        products.find((product) => product.slug === item.slug)?.quantity <
+        item.quantity
+    );
 
-    if (insufficientStockItems.length > 0) {
-      const itemNames = insufficientStockItems
-        .map((item) => item.slug)
-        .join(", ");
-      setAlert(`Stock not available for: ${itemNames}`);
-      setTimeout(() => setAlert(""), 3000);
+    if (invalidItems.length > 0) {
+      const invalidNames = invalidItems.map((item) => item.slug).join(", ");
+      setAlert(
+        `Error: The following items exceed available stock: ${invalidNames}. Please adjust the quantities.`
+      );
       return;
     }
 
-    // Prepare inventory update payload
     const updateInventory = invoiceItems.map((item) => ({
       slug: item.slug,
       quantity: item.quantity,
@@ -139,7 +138,6 @@ const SalesPage = () => {
           </div>
         )}
 
-        {alert && <div className="mt-4 text-center text-red-600">{alert}</div>}
         {/* Invoice Table */}
         {invoiceItems.length > 0 && (
           <div className="mt-6">
@@ -209,6 +207,9 @@ const SalesPage = () => {
             </button>
           </div>
         )}
+
+        {/* Alert */}
+        {alert && <div className="mt-4 text-center text-red-600">{alert}</div>}
       </div>
     </>
   );
