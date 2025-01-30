@@ -1,4 +1,4 @@
-"use client"; // Required for Next.js client-side components
+"use client";
 import { useState, useEffect, useRef } from "react";
 import * as Tesseract from "tesseract.js";
 
@@ -8,25 +8,16 @@ const ReceiptCapture = () => {
     const [loading, setLoading] = useState(false);
     const recognition = useRef(null);
 
-    // Initialize Tesseract.js on mount
-    // Update your useEffect for Tesseract initialization:
     useEffect(() => {
         const initializeTesseract = async () => {
             setLoading(true);
             try {
-                if (recognition.current) {
-                    await recognition.current.terminate();
-                }
-
-                recognition.current = await Tesseract.createWorker({
-                    logger: console.log,
-                    // Additional configuration if needed
-                });
+                recognition.current = await Tesseract.createWorker();
                 await recognition.current.loadLanguage("eng");
                 await recognition.current.initialize("eng");
             } catch (err) {
-                console.error("Failed to initialize OCR:", err);
-                setError("Failed to initialize OCR. Please try again.");
+                console.error("Failed to initialize Tesseract:", err);
+                setError("Failed to initialize OCR.");
             } finally {
                 setLoading(false);
             }
@@ -34,49 +25,47 @@ const ReceiptCapture = () => {
 
         initializeTesseract();
 
-        // Cleanup on unmount
         return () => {
             if (recognition.current) {
-                recognition.current.terminate();
+                recognition.current.terminate().catch(console.error);
             }
         };
     }, []);
 
-
-    // Handle image upload and OCR processing
-    // Update your handleImageUpload function:
     const handleImageUpload = async (event) => {
-        const fileInput = event.target.id === "receipt-upload" ? event.target : null;
-        if (!fileInput?.files?.[0]) return;
-
-        // Add loading feedback
-        fileInput?.setvalue(fileInput.files[0]);
+        const file = event.target.files[0];
+        if (!file) return;
 
         setLoading(true);
         setError("");
 
         try {
-            // Rest of the code remains the same
+            const { data: { text } } = await recognition.current.recognize(file);
+            const extractedData = extractText(text);
+
+            if (extractedData.length === 0) {
+                setError("OCR failed to recognize text. Try again.");
+            } else {
+                setImages((prev) => [
+                    ...prev,
+                    { image: URL.createObjectURL(file), text: extractedData },
+                ]);
+            }
         } catch (err) {
             console.error("OCR Error:", err);
-            setError("Error occurred during OCR processing. Please check the receipt and try again.");
+            setError("Error during OCR processing.");
         } finally {
             setLoading(false);
         }
     };
 
-    // Extract relevant information from OCR text
     const extractText = (text) => {
-        // Example: Extract product names and prices
-        const lines = text.split("\n");
-        const products = lines
+        return text.split("\n")
             .map((line) => {
-                const match = line.match(/(.+?)\s+(\d+\.\d{2})/); // Match product name and price
+                const match = line.match(/(.+?)\s+(\d+\.\d{2})/);
                 return match ? { name: match[1], price: parseFloat(match[2]) } : null;
             })
-            .filter(Boolean); // Remove null values
-
-        return products;
+            .filter(Boolean);
     };
 
     return (
@@ -87,7 +76,7 @@ const ReceiptCapture = () => {
                 onChange={handleImageUpload}
                 accept="image/*"
                 id="receipt-upload"
-                disabled={loading}
+                disabled={loading} // Ensure this updates correctly
             />
             {loading && <p>Processing receipt...</p>}
             {error && <p className="error-message">{error}</p>}
@@ -106,6 +95,6 @@ const ReceiptCapture = () => {
             )}
         </div>
     );
-}
+};
 
-export default ReceiptCapture;  
+export default ReceiptCapture;
