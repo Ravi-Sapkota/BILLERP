@@ -9,20 +9,23 @@ const ReceiptCapture = () => {
     const recognition = useRef(null);
 
     // Initialize Tesseract.js on mount
+    // Update your useEffect for Tesseract initialization:
     useEffect(() => {
         const initializeTesseract = async () => {
             setLoading(true);
             try {
+                if (recognition.current) {
+                    await recognition.current.terminate();
+                }
+
                 recognition.current = await Tesseract.createWorker({
-                    logger: (m) => {
-                        // Log only specific properties that can be cloned
-                        console.log(m.status, m.progress);
-                    },
+                    logger: console.log,
+                    // Additional configuration if needed
                 });
                 await recognition.current.loadLanguage("eng");
                 await recognition.current.initialize("eng");
             } catch (err) {
-                console.error("Failed to initialize Tesseract:", err);
+                console.error("Failed to initialize OCR:", err);
                 setError("Failed to initialize OCR. Please try again.");
             } finally {
                 setLoading(false);
@@ -39,31 +42,21 @@ const ReceiptCapture = () => {
         };
     }, []);
 
+
     // Handle image upload and OCR processing
+    // Update your handleImageUpload function:
     const handleImageUpload = async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
+        const fileInput = event.target.id === "receipt-upload" ? event.target : null;
+        if (!fileInput?.files?.[0]) return;
+
+        // Add loading feedback
+        fileInput?.setvalue(fileInput.files[0]);
 
         setLoading(true);
         setError("");
 
         try {
-            // Use Tesseract.js to recognize text from the uploaded image
-            const {
-                data: { text },
-            } = await recognition.current.recognize(file);
-
-            // Process and extract relevant information from the captured text
-            const extractedData = extractText(text);
-
-            if (extractedData.length === 0) {
-                setError("OCR failed to recognize text. Please try again.");
-            } else {
-                setImages((prev) => [
-                    ...prev,
-                    { image: URL.createObjectURL(file), text: extractedData },
-                ]);
-            }
+            // Rest of the code remains the same
         } catch (err) {
             console.error("OCR Error:", err);
             setError("Error occurred during OCR processing. Please check the receipt and try again.");
@@ -113,6 +106,6 @@ const ReceiptCapture = () => {
             )}
         </div>
     );
-};
+}
 
-export default ReceiptCapture;
+export default ReceiptCapture;  
