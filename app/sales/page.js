@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Header from "@/components/Header";
+import { saveToStorage } from "@/utils/storage";
 
 const SalesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +31,7 @@ const SalesPage = () => {
     }
     setInvoiceItems([
       ...invoiceItems,
-      { ...product, quantity: 1, rate: product.rate * 1.25 },
+      { ...product, quantity: 1, rate: product.rate * 1.2 },
     ]);
     setAlert("");
   };
@@ -47,6 +48,11 @@ const SalesPage = () => {
     (total, item) => total + calculateTotal(item),
     0
   );
+
+  const openInvoicePage = () => {
+    saveToStorage("invoiceData", invoiceItems);
+    window.open("/invoice", "_blank");
+  };
 
   const handleSubmit = async () => {
     // Check if any quantity exceeds stock availability
@@ -90,6 +96,7 @@ const SalesPage = () => {
         setAlert("Inventory successfully updated!");
         setInvoiceItems([]); // Clear the invoice after successful submission
         setTimeout(() => setAlert(""), 3000);
+        openInvoicePage();
       } else {
         setAlert(result.error || "Failed to update inventory.");
       }
