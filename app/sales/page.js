@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Header from "@/components/Header";
+import ReceiptCapture from "@/components/Receiptcapture"; // Import the OCR component
 
 const SalesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -207,7 +208,7 @@ const SalesPage = () => {
             </button>
           </div>
         )}
-
+        <ReceiptCapture /> {/* Add the OCR component here */}
         {/* Alert */}
         {alert && <div className="mt-4 text-center text-red-600">{alert}</div>}
       </div>

@@ -1,5 +1,6 @@
 "use client";
 import Header from "@/components/Header";
+import ReceiptCapture from "@/components/Receiptcapture"; // Import the OCR component
 import { useState, useEffect } from "react";
 
 export default function Home() {
@@ -247,6 +248,10 @@ export default function Home() {
             )}
           </tbody>
         </table>
+
+      </div>
+      <div>
+        <ReceiptCapture /> {/* Add the OCR component here */}
       </div>
     </>
   );
