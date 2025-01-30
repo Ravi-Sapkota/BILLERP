@@ -8,16 +8,22 @@ const ReceiptCapture = () => {
     const [loading, setLoading] = useState(false);
     const recognition = useRef(null);
 
-    // Initialize Tesseract.js
+    // Logger function (Fixes DataCloneError)
+    const tesseractLogger = (m) => {
+        if (m.status && m.progress !== undefined) {
+            console.log(`Tesseract Status: ${m.status}, Progress: ${Math.round(m.progress * 100)}%`);
+        }
+    };
+
+    // Initialize Tesseract.js worker
     useEffect(() => {
         const initializeTesseract = async () => {
             setLoading(true);
             try {
-                recognition.current = await Tesseract.createWorker({
-                    logger: (m) => console.log(m.status, m.progress),
-                });
+                recognition.current = await Tesseract.createWorker();
                 await recognition.current.loadLanguage("eng");
                 await recognition.current.initialize("eng");
+                recognition.current.setLogger(tesseractLogger); // ✅ Properly set the logger function
             } catch (err) {
                 console.error("Failed to initialize Tesseract:", err);
                 setError("Failed to initialize OCR. Please try again.");
@@ -44,11 +50,9 @@ const ReceiptCapture = () => {
         setError("");
 
         try {
-            // Perform OCR
             const { data: { text } } = await recognition.current.recognize(file);
             console.log("Extracted Text:", text);
 
-            // Process and extract relevant information
             const extractedData = extractText(text);
 
             if (extractedData.products.length === 0) {
@@ -71,7 +75,6 @@ const ReceiptCapture = () => {
     const extractText = (text) => {
         const lines = text.split("\n");
 
-        // Regular expression to match product lines (quantity, name, price, total)
         const productRegex = /(\d+)\s+([A-Za-z\s]+)\s+(\d+\.\d{2})\s+(\d+\.\d{2})/;
         let products = [];
         let totalAmount = 0;
@@ -89,7 +92,6 @@ const ReceiptCapture = () => {
             }
         });
 
-        // Try to extract the final total bill amount
         const totalRegex = /TOTAL\s*[:\-]?\s*\$?(\d+\.\d{2})/i;
         const totalMatch = text.match(totalRegex);
         const finalTotal = totalMatch ? parseFloat(totalMatch[1]) : totalAmount;
