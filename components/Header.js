@@ -36,9 +36,12 @@ const Header = () => {
           >
             Sales
           </Link>
-          <a className="mr-5 hover:text-white-900 px-2 py-1 rounded bg-gray-100">
-            Third Link
-          </a>
+          <Link
+            href={"/image"}
+            className="mr-5 hover:text-white-900 px-2 py-1 rounded bg-gray-100"
+          >
+            Upload Image
+          </Link>
           <a className="mr-5 hover:text-white-900 px-2 py-1 rounded bg-gray-100">
             Fourth Link
           </a>
