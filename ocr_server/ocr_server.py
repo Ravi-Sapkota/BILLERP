@@ -105,7 +105,7 @@ def extract_invoice():
         return jsonify({"items": extracted_items})
 
     except Exception as e:
-        print("🚨 OCR processing failed:", str(e))  # Debug log
+        print("OCR processing failed:", str(e))  # Debug log
         return jsonify({"error": f"Processing failed: {str(e)}"}), 500
 
 

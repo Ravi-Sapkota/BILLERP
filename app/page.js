@@ -1,253 +1,155 @@
 "use client";
-import Header from "@/components/Header";
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 
-export default function Home() {
-  const [productForm, setProductForm] = useState({});
-  const [products, setProducts] = useState([]);
-  const [alert, setAlert] = useState("");
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [dropdown, setDropdown] = useState([]);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("/api/product");
-      const rjson = await response.json();
-      setProducts(rjson.allProduct || []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      setProducts([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const addProduct = async (e) => {
-    e.preventDefault();
-    const quantityAsNumber = Number(productForm.quantity);
-    const rateAsNumber = Number(productForm.rate);
-    if (isNaN(quantityAsNumber) || isNaN(rateAsNumber)) {
-      console.log("Invalid quantity or rate");
-      setAlert("Please enter valid numbers for quantity and rate");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/product", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...productForm,
-          quantity: quantityAsNumber,
-          rate: rateAsNumber,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        console.log("Product added successfully");
-        setAlert("Your product has been added");
-        setProductForm({});
-        fetchProducts();
-        setTimeout(() => {
-          setAlert("");
-        }, 3000);
-      } else {
-        console.log("Error adding product", result.error || "Unknown error");
-        setAlert(result.error || "Failed to add products, please try again");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setAlert("An unexpected error occurred, please try again");
-    }
-  };
+export default function LoginPage() {
+  const [isRegister, setIsRegister] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState(null);
+  const router = useRouter(); // For redirection
 
   const handleChange = (e) => {
-    setProductForm({ ...productForm, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSearchChange = async (e) => {
-    setQuery(e.target.value);
-    if (e.target.value.length > 2) {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/search?query=${e.target.value}`);
-        const rjson = await response.json();
-        setDropdown(rjson.products || []);
-      } catch (error) {
-        console.error("Error fetching search results:", error);
-        setDropdown([]);
-      } finally {
-        setLoading(false);
-      }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    const res = await fetch(
+      `/api/user?username=${formData.email}&password=${formData.password}`
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      sessionStorage.setItem("authenticated", "true");
+      router.push("/dashboard");
     } else {
-      setDropdown([]);
+      setError(data.error);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    const res = await fetch("/api/user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.email,
+        password: formData.password,
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setIsRegister(false); // Switch to login on successful registration
+    } else {
+      setError(data.error);
     }
   };
 
   return (
-    <>
-      <Header />
-      <div
-        className="container my-8 mx-auto"
-        onBlur={() => {
-          setDropdown([]);
-        }}
-      >
-        <h1 className="text-3xl font-bold mb-6">Search a product</h1>
-        <div className="flex mb-6">
-          <input
-            value={query}
-            onChange={onSearchChange}
-            type="text"
-            placeholder="Search..."
-            className="w-full border border-gray-300 px-4 py-2 mb-2 rounded"
-          />
+    <div className="h-screen flex flex-col">
+      <header className="text-gray-600 body-font">
+        <div className="container mx-auto flex p-5 flex-col md:flex-row items-center justify-center">
+          <Link href="/" className="flex title-font font-medium text-gray-900">
+            <span className="ml-3 text-xl">Inventory with Billing ERP</span>
+          </Link>
         </div>
-        {loading && (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 100 100"
-            width="100"
-            height="100"
-            fill="none"
+      </header>
+
+      <div className="flex flex-1 items-center justify-center bg-gray-100">
+        {!isRegister ? (
+          <motion.div
+            initial={{ opacity: 1, x: 0 }}
+            animate={{ opacity: isRegister ? 0 : 1, x: isRegister ? -50 : 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-80 bg-white p-6 rounded shadow-md"
           >
-            <circle
-              cx="50"
-              cy="50"
-              r="40"
-              stroke="black"
-              strokeWidth="5"
-              strokeDasharray="63 63"
-              strokeLinecap="round"
-            >
-              <animateTransform
-                attributeName="transform"
-                type="rotate"
-                from="0 50 50"
-                to="360 50 50"
-                dur="1s"
-                repeatCount="indefinite"
+            <h2 className="text-2xl font-bold mb-4 text-center">Login Here</h2>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <form onSubmit={handleLogin}>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                className="w-full p-2 mb-2 border rounded"
+                onChange={handleChange}
+                required
               />
-            </circle>
-          </svg>
-        )}
-        <div className="dropcontainer w-full border-1 bg-purple-100 rounded-md">
-          {dropdown.map((item) => {
-            return (
-              <div
-                key={item.slug}
-                className="container flex justify-between my-3 border-b-2"
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                className="w-full p-2 mb-2 border rounded"
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="submit"
+                className="w-full mb-2 bg-indigo-500 text-white p-2 rounded hover:bg-indigo-600"
               >
-                <div className="mx-5">
-                  <span className="slug"> {item.slug}</span>
-                </div>
-                <span className="quantity px-3">
-                  Available: {item.quantity}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="container mx-auto my-8">
-        <h1 className="text-3xl font-bold mb-6">Add new items to Stock</h1>
-        <form>
-          <div className="mb-4">
-            <label htmlFor="productName" className="block mb-2">
-              Product Name
-            </label>
-            <input
-              value={productForm?.slug || ""}
-              name="slug"
-              onChange={handleChange}
-              type="text"
-              id="productName"
-              className="w-full border border-gray-300 px-4 py-2 rounded"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="quantity" className="block mb-2">
-              Quantity
-            </label>
-            <input
-              value={productForm?.quantity || ""}
-              name="quantity"
-              onChange={handleChange}
-              type="number"
-              id="quantity"
-              className="w-full border border-gray-300 px-4 py-2 rounded"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="rate" className="block mb-2">
-              Rate
-            </label>
-            <input
-              value={productForm?.rate || ""}
-              name="rate"
-              onChange={handleChange}
-              type="number"
-              id="rate"
-              className="w-full border border-gray-300 px-4 py-2 rounded"
-            />
-          </div>
-
-          <button
-            onClick={addProduct}
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded border border-gray-900"
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsRegister(true)}
+                className="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
+              >
+                New here? Register
+              </button>
+            </form>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: isRegister ? 1 : 0, x: isRegister ? 0 : 50 }}
+            transition={{ duration: 0.5 }}
+            className="w-80 bg-white p-6 rounded shadow-md"
           >
-            Add product
-          </button>
-        </form>
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Register Here
+            </h2>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <form onSubmit={handleRegister}>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                className="w-full p-2 mb-2 border rounded"
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                className="w-full p-2 mb-2 border rounded"
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="submit"
+                className="w-full mb-2 bg-indigo-500 text-white p-2 rounded hover:bg-indigo-600"
+              >
+                Register
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsRegister(false)}
+                className="w-full bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
+              >
+                Proceed to Login
+              </button>
+            </form>
+          </motion.div>
+        )}
       </div>
-      <div className="text-green-800 text-center">{alert}</div>
-
-      <div className="container my-8 mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Display Current Stock</h1>
-
-        <table className="table-auto w-full">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-500 px-4 py-2">Product Name</th>
-              <th className="border border-gray-500 px-4 py-2">Quantity</th>
-              <th className="border border-gray-500 px-4 py-2">Rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length > 0 ? (
-              products.map((product) => (
-                <tr key={product.slug}>
-                  <td className="border border-gray-500 px-4 py-2">
-                    {product.slug}
-                  </td>
-                  <td className="border border-gray-500 px-4 py-2 text-center">
-                    {product.quantity}
-                  </td>
-                  <td className="border border-gray-500 px-4 py-2 text-right">
-                    Rs. {product.rate}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td className="border px-4 py-2 text-center" colSpan="3">
-                  No products available.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </>
+    </div>
   );
 }

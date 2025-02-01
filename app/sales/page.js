@@ -73,7 +73,7 @@ const SalesPage = () => {
     const updateInventory = invoiceItems.map((item) => ({
       slug: item.slug,
       quantity: item.quantity,
-      rate: item.rate,
+      rate: item.rate * 1.2,
     }));
 
     try {

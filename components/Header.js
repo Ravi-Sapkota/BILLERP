@@ -1,12 +1,18 @@
 import Link from "next/link";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
+  const router = useRouter();
+  const handleLogout = () => {
+    sessionStorage.removeItem("authenticated");
+    router.push("/");
+  };
   return (
     <header className="text-gray-600 body-font">
       <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
         <Link
-          href={"/"}
+          href={"/dashboard"}
           className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0"
         >
           <svg
@@ -42,12 +48,12 @@ const Header = () => {
           >
             Upload Image
           </Link>
-          <a className="mr-5 hover:text-white-900 px-2 py-1 rounded bg-gray-100">
-            Fourth Link
-          </a>
         </nav>
-        <button className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
-          Button
+        <button
+          onClick={handleLogout}
+          className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0"
+        >
+          Logout
           <svg
             fill="none"
             stroke="currentColor"

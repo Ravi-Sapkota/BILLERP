@@ -1,6 +1,6 @@
-"use client"; // Ensures this runs on the client-side
+"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 
 export default function ImagePage() {
