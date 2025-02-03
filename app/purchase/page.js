@@ -56,9 +56,6 @@ const PurchasePage = () => {
     }));
 
     try {
-      console.log("Submitting inventory update request...");
-      console.log("Payload:", JSON.stringify({ inventory: updateInventory }));
-
       const response = await fetch("/api/purchase-inventory", {
         method: "POST",
         headers: {
@@ -66,14 +63,10 @@ const PurchasePage = () => {
         },
         body: JSON.stringify({ inventory: updateInventory }),
       });
-
-      console.log("Response Status:", response.status);
       const result = await response.json();
-
-      console.log("Response Data:", result);
       if (response.ok) {
         setAlert("Inventory successfully updated!");
-        setInvoiceItems([]); // Clear the invoice after successful submission
+        setInvoiceItems([]);
         setTimeout(() => setAlert(""), 3000);
       } else {
         setAlert(result.error || "Failed to update inventory.");
@@ -89,8 +82,6 @@ const PurchasePage = () => {
       <Header />
       <div className="container mx-auto my-8">
         <h1 className="text-3xl font-bold mb-6">Purchase Products</h1>
-
-        {/* Search Input */}
         <div className="flex mb-6">
           <input
             type="text"
@@ -100,11 +91,7 @@ const PurchasePage = () => {
             className="w-full border border-gray-300 px-4 py-2 mb-2"
           />
         </div>
-
-        {/* Loading Spinner */}
         {loading && <p className="text-center">Loading...</p>}
-
-        {/* Product Search Results */}
         {products.length > 0 && (
           <div className="bg-purple-100 p-4 rounded-md">
             {products.map((product) => (
@@ -122,8 +109,6 @@ const PurchasePage = () => {
             ))}
           </div>
         )}
-
-        {/* Invoice Table */}
         {invoiceItems.length > 0 && (
           <div className="mt-6">
             <h2 className="text-2xl font-bold mb-4">Purchase Invoice</h2>
@@ -192,8 +177,6 @@ const PurchasePage = () => {
             </button>
           </div>
         )}
-
-        {/* Alert */}
         {alert && <div className="mt-4 text-center text-red-600">{alert}</div>}
       </div>
     </>

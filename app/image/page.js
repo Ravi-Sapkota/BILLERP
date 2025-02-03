@@ -13,25 +13,21 @@ export default function ImagePage() {
     const file = event.target.files[0];
     if (file) {
       setSelectedImage(file);
-      setPreviewUrl(URL.createObjectURL(file)); // Create preview URL
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleExtractData = async () => {
     if (!selectedImage) return alert("Please upload an image first.");
-
     const formData = new FormData();
     formData.append("image", selectedImage);
-
     setLoading(true);
     try {
       const response = await fetch("/api/extract-invoice", {
         method: "POST",
         body: formData,
       });
-
       if (!response.ok) throw new Error("Failed to process the image.");
-
       const data = await response.json();
       if (data.error) {
         alert("Error extracting data: " + data.error);
@@ -67,9 +63,6 @@ export default function ImagePage() {
     }));
 
     try {
-      console.log("Submitting invoice data...");
-      console.log("Payload:", JSON.stringify({ inventory: updateInventory }));
-
       const response = await fetch("/api/purchase-inventory", {
         method: "POST",
         headers: {
@@ -77,14 +70,10 @@ export default function ImagePage() {
         },
         body: JSON.stringify({ inventory: updateInventory }),
       });
-
       const result = await response.json();
-
       if (response.ok) {
         alert("Inventory successfully updated!");
-        console.log("Inventory successfully updated!");
-
-        setInvoiceItems([]); // Clear the invoice after successful submission
+        setInvoiceItems([]);
       } else {
         alert(result.error || "Failed to update inventory.");
       }
@@ -141,7 +130,7 @@ export default function ImagePage() {
                     <td className="w-30 border border-gray-300 px-4 py-2">
                       <input
                         type="number"
-                        value={item.quantity || 0} // Default to 0 if undefined
+                        value={item.quantity || 0}
                         onChange={(e) =>
                           updateInvoiceItem(
                             index,
@@ -155,7 +144,7 @@ export default function ImagePage() {
                     <td className="w-30 border border-gray-300 px-4 py-2">
                       <input
                         type="number"
-                        value={item.rate || 0} // Default to 0 if undefined
+                        value={item.rate || 0}
                         onChange={(e) =>
                           updateInvoiceItem(
                             index,

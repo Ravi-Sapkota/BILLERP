@@ -5,7 +5,6 @@ const uri =
   "mongodb+srv://whiteshadow:Zfu6S8ZH3FBfOkXx@cluster0.23ufm.mongodb.net/";
 const client = new MongoClient(uri);
 
-// Scissor Cipher Functions (Left Shift 5)
 const encryptPassword = (password) => {
   return password
     .split("")
@@ -20,7 +19,6 @@ const decryptPassword = (encryptedPassword) => {
     .join("");
 };
 
-// ** User Registration **
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -37,7 +35,6 @@ export async function POST(request) {
     const database = client.db("stock");
     const users = database.collection("users");
 
-    // Check if user already exists
     const existingUser = await users.findOne({ username });
     if (existingUser) {
       return NextResponse.json(
@@ -46,7 +43,6 @@ export async function POST(request) {
       );
     }
 
-    // Encrypt password before saving
     const encryptedPassword = encryptPassword(password);
     await users.insertOne({ username, password: encryptedPassword });
 
@@ -65,7 +61,6 @@ export async function POST(request) {
   }
 }
 
-// ** User Login **
 export async function GET(request) {
   try {
     const query = request.nextUrl.searchParams;
@@ -83,13 +78,11 @@ export async function GET(request) {
     const database = client.db("stock");
     const users = database.collection("users");
 
-    // Find user
     const user = await users.findOne({ username });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Decrypt password and compare
     const decryptedPassword = decryptPassword(user.password);
     if (decryptedPassword !== password) {
       return NextResponse.json(

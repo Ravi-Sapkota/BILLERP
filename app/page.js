@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState(null);
-  const router = useRouter(); // For redirection
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,7 +47,7 @@ export default function LoginPage() {
 
     const data = await res.json();
     if (res.ok) {
-      setIsRegister(false); // Switch to login on successful registration
+      setIsRegister(false);
     } else {
       setError(data.error);
     }

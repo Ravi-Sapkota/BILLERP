@@ -10,10 +10,8 @@ export async function POST(req) {
       });
     }
 
-    console.log("Image received:", image.name, image.size); // Debug log
-
     const ocrFormData = new FormData();
-    ocrFormData.append("image", image, image.name); // Ensure correct FormData format
+    ocrFormData.append("image", image, image.name);
 
     const ocrResponse = await fetch("http://127.0.0.1:5000/extract-invoice", {
       method: "POST",

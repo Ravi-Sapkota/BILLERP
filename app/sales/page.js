@@ -55,7 +55,6 @@ const SalesPage = () => {
   };
 
   const handleSubmit = async () => {
-    // Check if any quantity exceeds stock availability
     const invalidItems = invoiceItems.filter(
       (item) =>
         products.find((product) => product.slug === item.slug)?.quantity <
@@ -77,9 +76,6 @@ const SalesPage = () => {
     }));
 
     try {
-      console.log("Submitting inventory update request...");
-      console.log("Payload:", JSON.stringify({ inventory: updateInventory }));
-
       const response = await fetch("/api/sales-inventory", {
         method: "POST",
         headers: {
@@ -87,14 +83,10 @@ const SalesPage = () => {
         },
         body: JSON.stringify({ inventory: updateInventory }),
       });
-
-      console.log("Response Status:", response.status);
       const result = await response.json();
-
-      console.log("Response Data:", result);
       if (response.ok) {
         setAlert("Inventory successfully updated!");
-        setInvoiceItems([]); // Clear the invoice after successful submission
+        setInvoiceItems([]);
         setTimeout(() => setAlert(""), 3000);
         openInvoicePage();
       } else {
@@ -111,8 +103,6 @@ const SalesPage = () => {
       <Header />
       <div className="container mx-auto my-8">
         <h1 className="text-3xl font-bold mb-6">Products Sales</h1>
-
-        {/* Search Input */}
         <div className="flex mb-6">
           <input
             type="text"
@@ -122,11 +112,7 @@ const SalesPage = () => {
             className="w-full border border-gray-300 px-4 py-2 mb-2"
           />
         </div>
-
-        {/* Loading Spinner */}
         {loading && <p className="text-center">Loading...</p>}
-
-        {/* Product Search Results */}
         {products.length > 0 && (
           <div className="bg-purple-100 p-4 rounded-md">
             {products.map((product) => (
@@ -144,8 +130,6 @@ const SalesPage = () => {
             ))}
           </div>
         )}
-
-        {/* Invoice Table */}
         {invoiceItems.length > 0 && (
           <div className="mt-6">
             <h2 className="text-2xl font-bold mb-4">Sales Invoice</h2>
@@ -214,8 +198,6 @@ const SalesPage = () => {
             </button>
           </div>
         )}
-
-        {/* Alert */}
         {alert && <div className="mt-4 text-center text-red-600">{alert}</div>}
       </div>
     </>

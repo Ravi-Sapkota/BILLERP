@@ -4,13 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter(); // Initialize router
-
-  // Check if user is authenticated when component mounts
+  const router = useRouter();
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem("authenticated");
     if (!isAuthenticated) {
-      router.push("/"); // Redirect to login page if not authenticated
+      router.push("/");
     }
   }, [router]);
 
@@ -41,7 +39,6 @@ export default function Home() {
     const quantityAsNumber = Number(productForm.quantity);
     const rateAsNumber = Number(productForm.rate);
     if (isNaN(quantityAsNumber) || isNaN(rateAsNumber)) {
-      console.log("Invalid quantity or rate");
       setAlert("Please enter valid numbers for quantity and rate");
       return;
     }
@@ -62,7 +59,6 @@ export default function Home() {
       const result = await response.json();
 
       if (response.ok) {
-        console.log("Product added successfully");
         setAlert("Your product has been added");
         setProductForm({});
         fetchProducts();
@@ -70,7 +66,6 @@ export default function Home() {
           setAlert("");
         }, 3000);
       } else {
-        console.log("Error adding product", result.error || "Unknown error");
         setAlert(result.error || "Failed to add products, please try again");
       }
     } catch (error) {

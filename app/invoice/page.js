@@ -99,7 +99,6 @@ const InvoicePage = () => {
 
   return (
     <div className="container mx-auto my-8">
-      {/* inv, org name date div */}
       <div className="flex justify-between items-center pb-4">
         <div className="w-1/8">
           <h1 className="text-xl font-bold">Invoice Number</h1>
@@ -128,9 +127,7 @@ const InvoicePage = () => {
         Sales Invoice
       </h1>
 
-      {/* buyer's details div */}
       <div className="flex gap-4 pb-4">
-        {/* Buyer's Name - 60% Width */}
         <div className="flex items-center w-3/5 gap-2">
           <h1 className="text-xl whitespace-nowrap">Buyer's Name:</h1>
           <input
@@ -140,7 +137,6 @@ const InvoicePage = () => {
           />
         </div>
 
-        {/* Address - 40% Width */}
         <div className="flex items-center w-2/5 gap-2">
           <h1 className="text-xl whitespace-nowrap">Address:</h1>
           <input
@@ -151,7 +147,6 @@ const InvoicePage = () => {
         </div>
       </div>
 
-      {/* bill table */}
       <table className="w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-200">
